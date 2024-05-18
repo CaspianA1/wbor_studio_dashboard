@@ -12,7 +12,7 @@ use crate::{
 		vec2f::Vec2f,
 		dynamic_optional::DynamicOptional,
 		generic_result::{GenericResult, MaybeError},
-		update_rate::{UpdateRate, UpdateRateCreator}
+		update_rate::{UpdateRateCreator}
 	},
 
 	window_tree::{
@@ -25,11 +25,9 @@ use crate::{
 	dashboard_defs::{
 		error::make_error_window,
 		credit::make_credit_window,
-		weather::make_weather_window,
 		shared_window_state::SharedWindowState,
 		twilio::{make_twilio_window, TwilioState},
 		surprise::{make_surprise_window, SurpriseCreationInfo},
-		clock::{ClockHandConfig, ClockHandConfigs, ClockHands},
 		spinitron::{make_spinitron_windows, SpinitronModelWindowInfo, SpinitronModelWindowsInfo}
 	}
 };
@@ -44,7 +42,6 @@ use crate::{
 #[derive(serde::Deserialize)]
 struct ApiKeys {
 	spinitron: String,
-	openweathermap: String,
 	twilio_account_sid: String,
 	twilio_auth_token: String
 }
@@ -73,10 +70,10 @@ pub fn make_dashboard(
 		maybe_outline_width: None
 	};
 
-	let top_bar_window_size_y = 0.1;
 	let main_windows_gap_size = 0.01;
 
-	let theme_color_1 = ColorSDL::RGB(249, 236, 210);
+	let theme_color_1 = ColorSDL::RGB(255, 133, 133);
+	let theme_color_2 = ColorSDL::RGB(255, 255, 255);
 	let shared_update_rate = update_rate_creator.new_instance(15.0);
 	let api_keys: ApiKeys = json_utils::load_from_file("assets/api_keys.json")?;
 
@@ -84,20 +81,21 @@ pub fn make_dashboard(
 
 	// Note: `tl` = top left
 	let spin_tl = Vec2f::new_scalar(main_windows_gap_size);
-	let spin_size = Vec2f::new_scalar(0.55);
+	let spin_size = Vec2f::new(0.55, 0.81); // Increase the second parameter to increase the height
 	let spin_text_height = 0.03;
 	let spin_tr = spin_tl.x() + spin_size.x();
 
 	let persona_tl = Vec2f::new(spin_tr + main_windows_gap_size, spin_tl.y());
-	let persona_size = Vec2f::new_scalar(0.1);
+	let persona_size = Vec2f::new(0.2, 0.3);
 
-	let persona_text_tl = Vec2f::translate_y(&persona_tl, persona_size.y());
-	let persona_text_height = 0.02;
+	let persona_text_tl = Vec2f::translate_y(&persona_tl, 0.0);
+	let persona_text_height = 0.0;
 
 	let show_tl = Vec2f::new(persona_tl.x() + persona_size.x() + main_windows_gap_size, spin_tl.y());
-	let show_size = Vec2f::new_scalar(1.0 - show_tl.x() - main_windows_gap_size);
+	let show_size = Vec2f::new(0.2, 0.3);
 
-	let show_text_tl = Vec2f::translate(&(spin_tl + spin_size), 0.03, -0.2);
+	let text_scalar = Vec2f::new_scalar(0.55);
+	let show_text_tl = Vec2f::translate(&(spin_tl + text_scalar), 0.03, -0.24);
 	let show_text_size = Vec2f::new(0.37, 0.05);
 
 	// TODO: make a type for the top-left/size combo (and add useful utility functions from there)
@@ -109,12 +107,14 @@ pub fn make_dashboard(
 			model_name: SpinitronModelName::Spin,
 			text_color: theme_color_1,
 
+			// Album cover
 			texture_window: Some(SpinitronModelWindowInfo {
 				tl: spin_tl,
 				size: spin_size,
 				border_color: Some(theme_color_1)
 			}),
 
+			// Spin text
 			text_window: Some(SpinitronModelWindowInfo {
 				tl: Vec2f::translate_y(&spin_tl, spin_size.y()),
 				size: Vec2f::new(spin_size.x(), spin_text_height),
@@ -134,12 +134,14 @@ pub fn make_dashboard(
 			model_name: SpinitronModelName::Show,
 			text_color: theme_color_1,
 
+			// Show image
 			texture_window: Some(SpinitronModelWindowInfo {
 				tl: show_tl,
 				size: show_size,
 				border_color: Some(theme_color_1)
 			}),
 
+			// Show title
 			text_window: Some(SpinitronModelWindowInfo {
 				tl: show_text_tl,
 				size: show_text_size,
@@ -151,12 +153,14 @@ pub fn make_dashboard(
 			model_name: SpinitronModelName::Persona,
 			text_color: theme_color_1,
 
+			// Persona image
 			texture_window: Some(SpinitronModelWindowInfo {
 				tl: persona_tl,
 				size: persona_size,
 				border_color: Some(theme_color_1)
 			}),
 
+			// Persona text
 			text_window: Some(SpinitronModelWindowInfo {
 				tl: persona_text_tl,
 				size: Vec2f::new(persona_size.x(), persona_text_height),
@@ -175,26 +179,20 @@ pub fn make_dashboard(
 	let twilio_state = TwilioState::new(
 		&api_keys.twilio_account_sid,
 		&api_keys.twilio_auth_token,
-		6,
+		11,
 		Duration::days(5),
 		false
 	);
 
 	let twilio_window = make_twilio_window(
 		&twilio_state,
-
-		// This is how often the history windows check for new messages (this is low so that it'll be fast in the beginning)
 		update_rate_creator.new_instance(0.25),
-
-		Vec2f::new(0.58, 0.45), Vec2f::new(0.4, 0.27),
-
+		Vec2f::new(0.58, 0.40), // Position
+		Vec2f::new(0.4, 0.55),
 		0.025,
-		WindowContents::Color(ColorSDL::RGB(0, 200, 0)),
-
-		Vec2f::new(0.1, 0.45),
-		theme_color_1, theme_color_1,
-
-		WindowContents::make_texture_contents("assets/text_bubble.png", texture_pool)?
+		WindowContents::Color(ColorSDL::RGB(23, 23, 23)),
+		Vec2f::new(0.0, 0.45),
+		theme_color_1, ColorSDL::RGB(238, 238, 238),
 	);
 
 	////////// Making an error window
@@ -210,63 +208,23 @@ pub fn make_dashboard(
 	////////// Making a credit window
 
 	let credit_window = make_credit_window(
-		Vec2f::new(0.85, 0.97),
-		Vec2f::new(0.15, 0.03),
-		ColorSDL::RED,
-		ColorSDL::RGB(210, 180, 140),
-		"By Caspian Ahlberg"
-	);
-
-	////////// Making a clock window
-
-	let clock_size_x = top_bar_window_size_y;
-	let clock_tl = Vec2f::new(1.0 - clock_size_x, 0.0);
-	let clock_size = Vec2f::new(clock_size_x, 1.0);
-
-	let (clock_hands, clock_window) = ClockHands::new_with_window(
-		UpdateRate::ONCE_PER_FRAME,
-		clock_tl,
-		clock_size,
-
-		ClockHandConfigs {
-			milliseconds: ClockHandConfig::new(0.01, 0.2, 0.5, ColorSDL::RGBA(255, 0, 0, 100)), // Milliseconds
-			seconds: ClockHandConfig::new(0.01, 0.02, 0.48, ColorSDL::WHITE), // Seconds
-			minutes: ClockHandConfig::new(0.01, 0.02, 0.35, ColorSDL::YELLOW), // Minutes
-			hours: ClockHandConfig::new(0.01, 0.02, 0.2, ColorSDL::BLACK) // Hours
-		},
-
-		"assets/watch_dial.png",
-		texture_pool
-	)?;
-
-	////////// Making a weather window
-
-	let weather_window = make_weather_window(
-		Vec2f::ZERO,
-		Vec2f::new(0.4, 0.3),
-		update_rate_creator,
-		&api_keys.openweathermap,
-		"Brunswick",
-		"ME",
-		"US"
+		Vec2f::new(0.8, 0.97),
+		Vec2f::new(0.2, 0.03),
+		ColorSDL::RGB(255, 153, 153),
+		ColorSDL::RGB(255, 153, 153),
+		"By: Caspian Ahlberg"
 	);
 
 	////////// Making some static texture windows
 
 	// Texture path, top left, size (TODO: make animated textures possible)
 	let main_static_texture_info = [
-		("assets/dashboard_bookshelf.png", Vec2f::ZERO, Vec2f::ONE, false),
-		("assets/logo.png", Vec2f::new(0.6, 0.75), Vec2f::new(0.1, 0.05), false),
-		("assets/soup.png", Vec2f::new(0.45, 0.72), Vec2f::new(0.06666666, 0.1), false),
-		("assets/ness.bmp", Vec2f::new(0.28, 0.73), Vec2f::new_scalar(0.08), false)
 	];
 
 	let foreground_static_texture_info = [
-		("assets/dashboard_foreground.png", Vec2f::ZERO, Vec2f::ONE, true)
 	];
 
 	let background_static_texture_info = [
-		// "assets/dashboard_background.png"
 	];
 
 	let add_static_texture_set =
@@ -294,21 +252,12 @@ pub fn make_dashboard(
 
 	////////// Making all of the main windows
 
-	let main_window_tl_y = main_windows_gap_size + top_bar_window_size_y + main_windows_gap_size;
-	let main_window_size_y = 1.0 - main_window_tl_y - main_windows_gap_size;
+	// Modify the calculation of main window's position and size
+	let main_window_tl_y = 0.0;  // Set top-left corner's y-coordinate to 0
+	let main_window_size_y = 1.0;  // Set size's y-coordinate to 1
+
+	// Calculate the x width for the main window
 	let x_width_from_main_window_gap_size = 1.0 - main_windows_gap_size * 2.0;
-
-	let top_bar_tl = Vec2f::new_scalar(main_windows_gap_size);
-
-	let top_bar_window = Window::new(
-		None,
-		DynamicOptional::NONE,
-		WindowContents::Color(ColorSDL::RGB(128, 0, 32)),
-		None,
-		top_bar_tl,
-		Vec2f::new(x_width_from_main_window_gap_size, top_bar_window_size_y),
-		Some(vec![clock_window, weather_window])
-	);
 
 	let mut main_window = Window::new(
 		None,
@@ -367,7 +316,7 @@ pub fn make_dashboard(
 
 	////////// Making the highest-level window
 
-	let mut all_windows = vec![top_bar_window, main_window];
+	let mut all_windows = vec![main_window];
 	add_static_texture_set(&mut all_windows, &foreground_static_texture_info, texture_pool);
 	all_windows.push(surprise_window);
 
@@ -397,7 +346,6 @@ pub fn make_dashboard(
 
 	let boxed_shared_state = DynamicOptional::new(
 		SharedWindowState {
-			clock_hands,
 			spinitron_state,
 			twilio_state,
 			font_info: &FONT_INFO,

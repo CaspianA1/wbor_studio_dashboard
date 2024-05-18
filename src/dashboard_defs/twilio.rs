@@ -287,7 +287,7 @@ impl TwilioStateData {
 
 	fn make_message_display_text(age_data: MessageAgeData, body: &str, maybe_from: Option<&str>) -> String {
 		let display_text = if let Some((unit_name, plural_suffix, unit_amount)) = age_data {
-			format!("{unit_amount} {unit_name}{plural_suffix} ago: '{body}'")
+			format!("{} {}{} ago: '{}'", unit_amount, unit_name, plural_suffix, body)
 		}
 		else {
 			format!("Right now: '{body}'")
@@ -466,8 +466,8 @@ impl TwilioState<'_> {
 				scroll_fn: |seed, text_fits_in_box| {
 					if text_fits_in_box {return (0.0, true);}
 
-					let total_cycle_time = 4.0;
-					let scroll_time_percent = 0.75;
+					let total_cycle_time = 6.0;
+					let scroll_time_percent = 0.65;
 
 					let wait_boundary = total_cycle_time * scroll_time_percent;
 					let scroll_value = seed % total_cycle_time;
@@ -551,8 +551,7 @@ pub fn make_twilio_window(
 	top_box_height: f32,
 	top_box_contents: WindowContents,
 	message_background_contents_text_crop_factor: Vec2f,
-	overall_border_color: ColorSDL, text_color: ColorSDL,
-	message_background_contents: WindowContents) -> Window {
+	overall_border_color: ColorSDL, text_color: ColorSDL) -> Window {
 
 	struct TwilioHistoryWindowState {
 		message_index: usize,
@@ -620,7 +619,7 @@ pub fn make_twilio_window(
 		let mut with_background_contents = Window::new(
 			None,
 			DynamicOptional::NONE,
-			message_background_contents.clone(),
+			WindowContents::Nothing,
 			None,
 			Vec2f::new(0.0, history_window_height * i as f32),
 			Vec2f::new(1.0, history_window_height),

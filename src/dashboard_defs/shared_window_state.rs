@@ -1,11 +1,10 @@
 use crate::{
     spinitron::state::SpinitronState,
     texture::{FontInfo, TextureCreationInfo},
-    dashboard_defs::{twilio::TwilioState, clock::ClockHands}
+    dashboard_defs::{twilio::TwilioState}
 };
 
 pub struct SharedWindowState<'a> {
-	pub clock_hands: ClockHands,
 	pub spinitron_state: SpinitronState,
 	pub twilio_state: TwilioState<'a>,
 
