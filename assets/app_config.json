@@ -5,7 +5,7 @@
 
 	"o1": {"Windowed": [1200, 800, false, null]},
 	"o2": "FullscreenDesktop",
-	"screen_option": { "Windowed": [1200, 800, false, null] },
+	"screen_option": { "Windowed": [1024, 768, false, null] },
 
 	"hide_cursor": true,
 	"use_linear_filtering": true,
