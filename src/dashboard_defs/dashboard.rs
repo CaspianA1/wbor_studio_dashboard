@@ -90,8 +90,10 @@ pub fn make_dashboard(
 	let persona_tl = Vec2f::new(spin_tr + main_windows_gap_size, spin_tl.y());
 	let persona_size = Vec2f::new(0.2, 0.3);
 
+	/*
 	let persona_text_tl = Vec2f::translate_y(&persona_tl, 0.0);
-	let persona_text_height = 0.0;
+	let persona_text_height = 0.05;
+	*/
 
 	let show_tl = Vec2f::new(persona_tl.x() + persona_size.x() + main_windows_gap_size, spin_tl.y());
 	let show_size = persona_size;
@@ -157,11 +159,15 @@ pub fn make_dashboard(
 				border_color: Some(theme_color_1)
 			}),
 
+			text_window: None
+
+			/*
 			text_window: Some(SpinitronModelWindowInfo {
 				tl: persona_text_tl,
 				size: Vec2f::new(persona_size.x(), persona_text_height),
 				border_color: Some(theme_color_1)
 			})
+			*/
 		}
 	];
 
