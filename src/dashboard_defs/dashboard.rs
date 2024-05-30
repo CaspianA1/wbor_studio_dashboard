@@ -289,7 +289,7 @@ pub fn make_dashboard(
 
 	////////// Making all of the main windows
 
-	// Modify the calculation of main window's position and size
+	// Modify the calculation of the main window's position and size
 	let (main_window_tl_y, main_window_size_y) = (0.0, 1.0);
 
 	// Calculate the x width for the main window
