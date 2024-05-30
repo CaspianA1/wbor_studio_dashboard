@@ -1,4 +1,4 @@
-auth_details=`jq -r '[.twilio_account_sid, .twilio_auth_token] | join(" ")' api_keys.json`
+auth_details=`jq -r '[.twilio_account_sid, .twilio_auth_token] | join(" ")' ../assets/api_keys.json`
 read account_sid auth_token <<< $auth_details
 
 ##########

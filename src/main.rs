@@ -168,7 +168,7 @@ fn main() -> utility_types::generic_result::MaybeError {
 	let (mut top_level_window, shared_window_state, shared_window_state_updater) =
 		match core_init_info {
 			Ok(info) => info,
-			Err(err) => {panic!("An error arose when initializing the application: '{err}'.");}
+			Err(err) => panic!("An error arose when initializing the application: '{err}'.")
 		};
 
 	rendering_params.shared_window_state = shared_window_state;
@@ -179,9 +179,7 @@ fn main() -> utility_types::generic_result::MaybeError {
 	let mut pausing_window = false;
 	// let mut initial_num_textures_in_pool = None;
 
-	log::info!("Finished setting up window");
-	log::info!("Canvas size: {:?}", rendering_params.sdl_canvas.output_size()?);
-	log::info!("Renderer info: {:?}", sdl_renderer_info);
+	log::info!("Finished setting up window. Canvas size: {:?}. Renderer info: {:?}.", rendering_params.sdl_canvas.output_size()?, sdl_renderer_info);
 
 	'running: loop {
 		for sdl_event in sdl_event_pump.poll_iter() {
