@@ -109,14 +109,12 @@ pub fn make_dashboard(
 			model_name: SpinitronModelName::Spin,
 			text_color: theme_color_1,
 
-			// Album cover
 			texture_window: Some(SpinitronModelWindowInfo {
 				tl: spin_tl,
 				size: spin_size,
 				border_color: Some(theme_color_1)
 			}),
 
-			// Spin text
 			text_window: Some(SpinitronModelWindowInfo {
 				tl: Vec2f::translate_y(&spin_tl, spin_size.y()),
 				size: Vec2f::new(spin_size.x(), spin_text_height),
@@ -136,14 +134,12 @@ pub fn make_dashboard(
 			model_name: SpinitronModelName::Show,
 			text_color: theme_color_1,
 
-			// Show image
 			texture_window: Some(SpinitronModelWindowInfo {
 				tl: show_tl,
 				size: show_size,
 				border_color: Some(theme_color_1)
 			}),
 
-			// Show title
 			text_window: Some(SpinitronModelWindowInfo {
 				tl: show_text_tl,
 				size: show_text_size,
@@ -155,14 +151,12 @@ pub fn make_dashboard(
 			model_name: SpinitronModelName::Persona,
 			text_color: theme_color_1,
 
-			// Persona image
 			texture_window: Some(SpinitronModelWindowInfo {
 				tl: persona_tl,
 				size: persona_size,
 				border_color: Some(theme_color_1)
 			}),
 
-			// Persona text
 			text_window: Some(SpinitronModelWindowInfo {
 				tl: persona_text_tl,
 				size: Vec2f::new(persona_size.x(), persona_text_height),
