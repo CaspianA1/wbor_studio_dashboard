@@ -1,6 +1,8 @@
+mod clock;
 mod error;
 mod credit;
 mod twilio;
+mod weather;
 mod surprise;
 mod spinitron;
 mod shared_window_state;

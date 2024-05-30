@@ -12,7 +12,7 @@ use crate::{
 		vec2f::Vec2f,
 		dynamic_optional::DynamicOptional,
 		generic_result::{GenericResult, MaybeError},
-		update_rate::{UpdateRateCreator}
+		update_rate::{UpdateRate, UpdateRateCreator}
 	},
 
 	window_tree::{
@@ -25,9 +25,11 @@ use crate::{
 	dashboard_defs::{
 		error::make_error_window,
 		credit::make_credit_window,
+		weather::make_weather_window,
 		shared_window_state::SharedWindowState,
 		twilio::{make_twilio_window, TwilioState},
 		surprise::{make_surprise_window, SurpriseCreationInfo},
+		clock::{ClockHandConfig, ClockHandConfigs, ClockHands},
 		spinitron::{make_spinitron_windows, SpinitronModelWindowInfo, SpinitronModelWindowsInfo}
 	}
 };
@@ -42,6 +44,7 @@ use crate::{
 #[derive(serde::Deserialize)]
 struct ApiKeys {
 	spinitron: String,
+	openweathermap: String,
 	twilio_account_sid: String,
 	twilio_auth_token: String
 }
@@ -73,7 +76,6 @@ pub fn make_dashboard(
 	let main_windows_gap_size = 0.01;
 
 	let theme_color_1 = ColorSDL::RGB(255, 133, 133);
-	let theme_color_2 = ColorSDL::RGB(255, 255, 255);
 	let shared_update_rate = update_rate_creator.new_instance(15.0);
 	let api_keys: ApiKeys = json_utils::load_from_file("assets/api_keys.json")?;
 
@@ -81,7 +83,7 @@ pub fn make_dashboard(
 
 	// Note: `tl` = top left
 	let spin_tl = Vec2f::new_scalar(main_windows_gap_size);
-	let spin_size = Vec2f::new(0.55, 0.81); // Increase the second parameter to increase the height
+	let spin_size = Vec2f::new(0.55, 0.81);
 	let spin_text_height = 0.03;
 	let spin_tr = spin_tl.x() + spin_size.x();
 
@@ -92,7 +94,7 @@ pub fn make_dashboard(
 	let persona_text_height = 0.0;
 
 	let show_tl = Vec2f::new(persona_tl.x() + persona_size.x() + main_windows_gap_size, spin_tl.y());
-	let show_size = Vec2f::new(0.2, 0.3);
+	let show_size = persona_size;
 
 	let text_scalar = Vec2f::new_scalar(0.55);
 	let show_text_tl = Vec2f::translate(&(spin_tl + text_scalar), 0.03, -0.24);
@@ -186,7 +188,10 @@ pub fn make_dashboard(
 
 	let twilio_window = make_twilio_window(
 		&twilio_state,
+
+		// This is how often the history windows check for new messages (this is low so that it'll be fast in the beginning)
 		update_rate_creator.new_instance(0.25),
+
 		Vec2f::new(0.58, 0.40), // Position
 		Vec2f::new(0.4, 0.55),
 		0.025,
@@ -215,17 +220,46 @@ pub fn make_dashboard(
 		"By: Caspian Ahlberg"
 	);
 
+	////////// Making a clock window
+
+	let clock_size_x = 0.3;
+	let clock_tl = Vec2f::new(1.0 - clock_size_x, 0.0);
+	let clock_size = Vec2f::new(clock_size_x, 1.0);
+
+	let (clock_hands, clock_window) = ClockHands::new_with_window(
+		UpdateRate::ONCE_PER_FRAME,
+		clock_tl,
+		clock_size,
+
+		ClockHandConfigs {
+			milliseconds: ClockHandConfig::new(0.01, 0.2, 0.5, ColorSDL::RGBA(255, 0, 0, 100)), // Milliseconds
+			seconds: ClockHandConfig::new(0.01, 0.02, 0.48, ColorSDL::WHITE), // Seconds
+			minutes: ClockHandConfig::new(0.01, 0.02, 0.35, ColorSDL::YELLOW), // Minutes
+			hours: ClockHandConfig::new(0.01, 0.02, 0.2, ColorSDL::BLACK) // Hours
+		},
+
+		"assets/watch_dial.png",
+		texture_pool
+	)?;
+
+	////////// Making a weather window
+
+	let weather_window = make_weather_window(
+		Vec2f::ZERO,
+		Vec2f::new(0.4, 0.3),
+		update_rate_creator,
+		&api_keys.openweathermap,
+		"Brunswick",
+		"ME",
+		"US"
+	);
+
 	////////// Making some static texture windows
 
 	// Texture path, top left, size (TODO: make animated textures possible)
-	let main_static_texture_info = [
-	];
-
-	let foreground_static_texture_info = [
-	];
-
-	let background_static_texture_info = [
-	];
+	let main_static_texture_info = [];
+	let foreground_static_texture_info = [];
+	let background_static_texture_info = [];
 
 	let add_static_texture_set =
 		|set: &mut Vec<Window>, all_info: &[(&'static str, Vec2f, Vec2f, bool)], texture_pool: &mut TexturePool| {
@@ -346,6 +380,7 @@ pub fn make_dashboard(
 
 	let boxed_shared_state = DynamicOptional::new(
 		SharedWindowState {
+			clock_hands,
 			spinitron_state,
 			twilio_state,
 			font_info: &FONT_INFO,
