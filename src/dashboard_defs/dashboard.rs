@@ -191,7 +191,8 @@ pub fn make_dashboard(
 		0.025,
 		WindowContents::Color(ColorSDL::RGB(23, 23, 23)),
 		Vec2f::new(0.0, 0.45),
-		theme_color_1, ColorSDL::RGB(238, 238, 238),
+		theme_color_1,
+		ColorSDL::RGB(238, 238, 238)
 	);
 
 	////////// Making an error window
@@ -206,11 +207,13 @@ pub fn make_dashboard(
 
 	////////// Making a credit window
 
+	let border_and_text_color = ColorSDL::RGB(255, 153, 153);
+
 	let credit_window = make_credit_window(
 		Vec2f::new(0.8, 0.97),
 		Vec2f::new(0.2, 0.03),
-		ColorSDL::RGB(255, 153, 153),
-		ColorSDL::RGB(255, 153, 153),
+		border_and_text_color,
+		border_and_text_color,
 		"By: Caspian Ahlberg"
 	);
 
@@ -220,7 +223,7 @@ pub fn make_dashboard(
 	let clock_tl = Vec2f::new(1.0 - clock_size_x, 0.0);
 	let clock_size = Vec2f::new(clock_size_x, 1.0);
 
-	let (clock_hands, clock_window) = ClockHands::new_with_window(
+	let (clock_hands, _) = ClockHands::new_with_window(
 		UpdateRate::ONCE_PER_FRAME,
 		clock_tl,
 		clock_size,
@@ -238,7 +241,7 @@ pub fn make_dashboard(
 
 	////////// Making a weather window
 
-	let weather_window = make_weather_window(
+	let _ = make_weather_window(
 		Vec2f::ZERO,
 		Vec2f::new(0.4, 0.3),
 		update_rate_creator,
@@ -281,8 +284,7 @@ pub fn make_dashboard(
 	////////// Making all of the main windows
 
 	// Modify the calculation of main window's position and size
-	let main_window_tl_y = 0.0;  // Set top-left corner's y-coordinate to 0
-	let main_window_size_y = 1.0;  // Set size's y-coordinate to 1
+	let (main_window_tl_y, main_window_size_y) = (0.0, 1.0);
 
 	// Calculate the x width for the main window
 	let x_width_from_main_window_gap_size = 1.0 - main_windows_gap_size * 2.0;
