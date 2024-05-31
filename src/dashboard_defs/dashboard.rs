@@ -357,7 +357,7 @@ pub fn make_dashboard(
 				local_hours_24_end: 23,
 
 				flicker_window: true
-			},
+			}
 		],
 
 		update_rate_creator,
