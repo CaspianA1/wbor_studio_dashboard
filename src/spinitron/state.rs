@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use chrono::Timelike;
+
 use crate::{
 	request,
 	texture::TextureCreationInfo,
@@ -131,7 +133,7 @@ impl SpinitronStateData {
 			and precaching anything from disk in byte form as well. */
 			match info.as_ref() {
 				TextureCreationInfo::Path(path) =>
-					Ok(std::fs::read(&path as &str)?),
+					Ok(std::fs::read(path as &str)?),
 
 				TextureCreationInfo::Url(url) =>
 					Ok(request::get(url)?.as_bytes().to_vec()),
@@ -169,6 +171,8 @@ impl SpinitronStateData {
 			self.spin = maybe_new_spin;
 		}
 
+		//////////
+
 		/* Step 2: get a maybe new playlist (don't base it on a spin ID,
 		since the spin may not belong to a playlist under automation). */
 		let maybe_new_playlist = Playlist::get(api_key)?;
@@ -180,10 +184,18 @@ impl SpinitronStateData {
 			self.playlist = maybe_new_playlist;
 		}
 
-		/* Step 4: get the current show id (based on what's on the
-		schedule, irrespective of what show was last on).
-		TODO: should I only do this in the branch above? */
-		self.show = Show::get(api_key)?;
+		//////////
+
+		let curr_minutes = chrono::Local::now().minute();
+
+		// Shows can only be scheduled under 30-minute intervals
+		if curr_minutes == 0 || curr_minutes == 30 {
+			/* Step 4: get the current show id (based on what's on the
+			schedule, irrespective of what show was last on).
+			This is not in the branch above, since the show should
+			change directly on schedule, not when a new playlist is made. */
+			self.show = Show::get(api_key)?;
+		}
 
 		Ok(())
 	}
