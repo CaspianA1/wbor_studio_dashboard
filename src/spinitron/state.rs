@@ -21,6 +21,7 @@ use crate::{
 /* TODO:
 - For unscheduled playlists with no show photo, make the show image the DJ image
 - And for unscheduled playlists, also show the current show name, rather than what's on the schedule
+- In general, just figure out how to display unscheduled playlists (i.e. ones not strictly associated with a show)
 */
 
 //////////
@@ -105,6 +106,7 @@ impl SpinitronStateData {
 		let show = Show::get(api_key)?;
 
 		let spin_expiry_data = SpinExpiryData::new(spin_expiry_duration, &spin)?;
+
 		const INITIAL_PRECACHED: Vec<u8> = Vec::new();
 
 		let mut data = Self {
@@ -113,7 +115,7 @@ impl SpinitronStateData {
 			spin, playlist, persona, show,
 
 			spin_expiry_data,
-			precached_texture_bytes: [INITIAL_PRECACHED; 4], // TODO: shorten this somehow
+			precached_texture_bytes: [INITIAL_PRECACHED; NUM_SPINITRON_MODEL_TYPES],
 			fallback_texture_creation_info,
 
 			update_statuses: [false; NUM_SPINITRON_MODEL_TYPES]
