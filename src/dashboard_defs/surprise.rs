@@ -121,10 +121,11 @@ pub fn make_surprise_window(
 		let trigger_appearance_artificially = not_currently_active && {
 			let mut shared_info = surprise_info.shared_info.borrow_mut();
 
-			// TODO: include some error handling here
+			/* TODO: include some error handling here (should I care
+			about the "resource temporarily unavailable" thing?) */
 			if let Some(Ok(stream)) = shared_info.surprise_stream_listener.next() {
 				let mut reader = BufReader::new(stream);
-				reader.read_line(&mut shared_info.surprise_stream_path_buffer)?;
+				let _ = reader.read_line(&mut shared_info.surprise_stream_path_buffer);
 
 				if let Some(matching_path) = shared_info.surprise_path_set.get(&shared_info.surprise_stream_path_buffer) {
 					let rc_cloned_matching_path = matching_path.clone();
@@ -192,7 +193,19 @@ pub fn make_surprise_window(
 
 	let options = ListenerOptions::new().name(artificial_triggering_socket_path.to_fs_name::<GenericFilePath>()?);
 
-	let surprise_stream_listener = options.create_sync()?;
+	let surprise_stream_listener = match options.create_sync() {
+		Ok(listener) => listener,
+
+		Err(err) => {
+			return Err(format!(
+				"Could not create a surprise stream listener. \
+				Perhaps the socket at '{artificial_triggering_socket_path}' is already in use, or \
+				maybe it was still around from a crash? \
+				Official error: '{err}'."
+			).into());
+		}
+	};
+
 	surprise_stream_listener.set_nonblocking(ListenerNonblockingMode::Both)?;
 
 	let shared_surprise_info = Rc::new(RefCell::new(SharedSurpriseInfo {
